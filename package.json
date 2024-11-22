@@ -2,9 +2,12 @@
   "name": "rsa-digital-signature",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://minseobhan22.github.io/Algo_Demo/",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "predeploy": "npm run build",
+    "deploy": "echo.> out/.nojekyll && gh-pages -d out --dotfiles",
     "start": "next start",
     "lint": "next lint"
   },
@@ -12,6 +15,7 @@
     "big-integer": "^1.6.52",
     "crypto-browserify": "^3.12.1",
     "crypto-js": "^4.2.0",
+    "gh-pages": "^6.2.0",
     "jsrsasign": "^10.5.5",
     "next": "15.0.3",
     "node-rsa": "^1.1.1",
