@@ -17,7 +17,7 @@ export default function RSADigitalSignature() {
   const [isVerified, setIsVerified] = useState(null);
 
   const generateKeys = () => {
-    // 사용자 정의 소수로 키 생성
+    // 키 생성
     const key = new NodeRSA({ b: 512 });
     setPrivateKey(key.exportKey('private'));
     setPublicKey(key.exportKey('public'));
@@ -30,7 +30,7 @@ export default function RSADigitalSignature() {
     
     // 해시 생성 및 서명 과정
     const messageHash = CryptoJS.SHA256(message).toString(); // SHA-256 해시 함수 적용
-    const signature = key.encryptPrivate(messageHash, 'base64'); // 비공개 키를 이용한 암호화
+    const signature = key.sign(messageHash, 'base64', 'utf8'); // 비공개 키를 이용해 서명 생성
     setSignature(signature);
   };
 
@@ -40,10 +40,10 @@ export default function RSADigitalSignature() {
     key.importKey(publicKey, 'public');
 
     // 서명 검증 과정
-    const decryptedHash = key.decryptPublic(signature, 'utf8'); // 공개 키를 이용하여 서명 복호화
-    const originalHash = CryptoJS.SHA256(message).toString(); // 원본 메시지 해시 생성
+    const messageHash = CryptoJS.SHA256(message).toString(); // 원본 메시지 해시 생성
+    const isValid = key.verify(messageHash, signature, 'utf8', 'base64'); // 공개 키를 이용해 서명 검증
 
-    setIsVerified(decryptedHash === originalHash);
+    setIsVerified(isValid);
   };
 
   return (
@@ -76,7 +76,7 @@ export default function RSADigitalSignature() {
           <p>서명 생성 과정 설명:</p>
           <ol>
             <li>1. 입력된 메시지에 대해 해시 함수(SHA-256)가 적용됩니다. 이 해시 함수는 메시지를 고정된 길이의 해시 값으로 변환합니다.</li>
-            <li>2. 비공개 키를 사용하여 이 해시 값을 암호화합니다. 이 암호화된 값이 디지털 서명입니다.</li>
+            <li>2. 비공개 키를 사용하여 이 해시 값을 서명합니다. 이 암호화된 값이 디지털 서명입니다.</li>
             <li>3. 디지털 서명은 메시지와 함께 수신자에게 전달됩니다.</li>
           </ol>
         </div>
@@ -93,7 +93,7 @@ export default function RSADigitalSignature() {
             <p>서명 검증 과정 설명:</p>
             <ol>
               <li>1. 수신자는 전달받은 메시지에 대해 동일한 해시 함수를 적용하여 해시 값을 계산합니다.</li>
-              <li>2. 공개 키를 사용하여 서명을 복호화하고, 이 복호화 결과가 발신자가 생성한 해시 값인지 확인합니다.</li>
+              <li>2. 공개 키를 사용하여 서명을 검증하고, 발신자가 생성한 해시 값인지 확인합니다.</li>
               <li>3. 두 해시 값이 같다면 데이터가 위변조되지 않았음을 증명합니다.</li>
             </ol>
           </div>
