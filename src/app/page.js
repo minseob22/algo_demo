@@ -1,101 +1,104 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+// Next.js 14 (NEXT14) 환경에서 RSA 디지털 서명을 구현하는 예시 코드입니다.
+// 각 단계는 "키 생성", "서명 생성", "서명 검증"으로 구성됩니다.
+
+// 필요한 모듈 설치
+// npm install node-rsa crypto-js
+import { useState } from 'react';
+import NodeRSA from 'node-rsa';
+import CryptoJS from 'crypto-js';
+
+export default function RSADigitalSignature() {
+  const [publicKey, setPublicKey] = useState('');
+  const [privateKey, setPrivateKey] = useState('');
+  const [message, setMessage] = useState('');
+  const [signature, setSignature] = useState('');
+  const [isVerified, setIsVerified] = useState(null);
+
+  const generateKeys = () => {
+    // 사용자 정의 소수로 키 생성
+    const key = new NodeRSA({ b: 512 });
+    setPrivateKey(key.exportKey('private'));
+    setPublicKey(key.exportKey('public'));
+  };
+
+  const signMessage = () => {
+    if (!privateKey) return alert('먼저 키를 생성하세요.');
+    const key = new NodeRSA();
+    key.importKey(privateKey, 'private');
+    
+    // 해시 생성 및 서명 과정
+    const messageHash = CryptoJS.SHA256(message).toString(); // SHA-256 해시 함수 적용
+    const signature = key.encryptPrivate(messageHash, 'base64'); // 비공개 키를 이용한 암호화
+    setSignature(signature);
+  };
+
+  const verifyMessage = () => {
+    if (!publicKey || !signature) return alert('먼저 서명을 생성하세요.');
+    const key = new NodeRSA();
+    key.importKey(publicKey, 'public');
+
+    // 서명 검증 과정
+    const decryptedHash = key.decryptPublic(signature, 'utf8'); // 공개 키를 이용하여 서명 복호화
+    const originalHash = CryptoJS.SHA256(message).toString(); // 원본 메시지 해시 생성
+
+    setIsVerified(decryptedHash === originalHash);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div style={{ padding: '20px' }}>
+      <h2>RSA 디지털 서명 데모</h2>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div style={{ marginBottom: '20px' }}>
+        <h3>1. 키 생성</h3>
+        <button style={{ border: '1px solid black', padding: '5px' }} onClick={generateKeys}>
+          키 생성
+        </button>
+        <div>
+          <p>공개키: {publicKey}</p>
+          <p>비공개키: {privateKey}</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <h3>2. 서명 생성</h3>
+        <textarea
+          placeholder="메시지 입력"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button style={{ border: '1px solid black', padding: '5px' }} onClick={signMessage}>
+          서명 생성
+        </button>
+        <div>
+          <p>서명: {signature}</p>
+          <p>서명 생성 과정 설명:</p>
+          <ol>
+            <li>1. 입력된 메시지에 대해 해시 함수(SHA-256)가 적용됩니다. 이 해시 함수는 메시지를 고정된 길이의 해시 값으로 변환합니다.</li>
+            <li>2. 비공개 키를 사용하여 이 해시 값을 암호화합니다. 이 암호화된 값이 디지털 서명입니다.</li>
+            <li>3. 디지털 서명은 메시지와 함께 수신자에게 전달됩니다.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <h3>3. 서명 검증</h3>
+        <button style={{ border: '1px solid black', padding: '5px' }} onClick={verifyMessage}>
+          서명 검증
+        </button>
+        {isVerified !== null && (
+          <div>
+            <p>검증 결과: {isVerified ? '서명이 유효합니다.' : '서명이 유효하지 않습니다.'}</p>
+            <p>서명 검증 과정 설명:</p>
+            <ol>
+              <li>1. 수신자는 전달받은 메시지에 대해 동일한 해시 함수를 적용하여 해시 값을 계산합니다.</li>
+              <li>2. 공개 키를 사용하여 서명을 복호화하고, 이 복호화 결과가 발신자가 생성한 해시 값인지 확인합니다.</li>
+              <li>3. 두 해시 값이 같다면 데이터가 위변조되지 않았음을 증명합니다.</li>
+            </ol>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

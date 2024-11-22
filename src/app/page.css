@@ -1,0 +1,23 @@
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .message-input {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 20px;
+  }
+  
+  .keys, .signature, .verification-result {
+    margin-top: 20px;
+  }
+  
