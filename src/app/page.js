@@ -13,6 +13,7 @@ export default function RSADigitalSignature() {
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [message, setMessage] = useState('');
+  const [messageHash, setMessageHash] = useState('');
   const [signature, setSignature] = useState('');
   const [isVerified, setIsVerified] = useState(null);
 
@@ -29,8 +30,9 @@ export default function RSADigitalSignature() {
     key.importKey(privateKey, 'private');
     
     // 해시 생성 및 서명 과정
-    const messageHash = CryptoJS.SHA256(message).toString(); // SHA-256 해시 함수 적용
-    const signature = key.sign(messageHash, 'base64', 'utf8'); // 비공개 키를 이용해 서명 생성
+    const hash = CryptoJS.SHA256(message).toString(); // SHA-256 해시 함수 적용
+    setMessageHash(hash); // 해시 값을 상태에 저장
+    const signature = key.sign(hash, 'base64', 'utf8'); // 비공개 키를 이용해 서명 생성
     setSignature(signature);
   };
 
@@ -39,9 +41,11 @@ export default function RSADigitalSignature() {
     const key = new NodeRSA();
     key.importKey(publicKey, 'public');
 
-    // 서명 검증 과정
-    const messageHash = CryptoJS.SHA256(message).toString(); // 원본 메시지 해시 생성
-    const isValid = key.verify(messageHash, signature, 'utf8', 'base64'); // 공개 키를 이용해 서명 검증
+    // 원본 메시지 해시 생성
+    const hash = CryptoJS.SHA256(message).toString();
+
+    // 서명 검증
+    const isValid = key.verify(hash, signature, 'utf8', 'base64');
 
     setIsVerified(isValid);
   };
@@ -72,6 +76,7 @@ export default function RSADigitalSignature() {
           서명 생성
         </button>
         <div>
+          <p>메시지 해시: {messageHash}</p>
           <p>서명: {signature}</p>
           <p>서명 생성 과정 설명:</p>
           <ol>
@@ -96,6 +101,10 @@ export default function RSADigitalSignature() {
               <li>2. 공개 키를 사용하여 서명을 검증하고, 발신자가 생성한 해시 값인지 확인합니다.</li>
               <li>3. 두 해시 값이 같다면 데이터가 위변조되지 않았음을 증명합니다.</li>
             </ol>
+            <h4>서명 검증 상세 정보</h4>
+            <p>공개키: {publicKey}</p>
+            <p>원본 메시지의 해시값: {messageHash}</p>
+            <p>원본 메시지: {message}</p>
           </div>
         )}
       </div>
